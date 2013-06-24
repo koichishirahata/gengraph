@@ -31,7 +31,6 @@
 #include "generator/graph_generator.h"
 #include "generator/make_graph.h"
 
-#define __OUTPUT__
 #define GEN_ONLY
 
 static int64_t nvtx_scale;
@@ -55,14 +54,11 @@ static void output_results (const int64_t SCALE, int64_t nvtx_scale,
 			    const double construction_time,
 			    const int NBFS,
 			    const double *bfs_time, const int64_t *bfs_nedge);
-static void output_results_tofile (FILE* fp, const int64_t SCALE, int64_t nvtx_scale,
-			    int64_t edgefactor,
-			    const double A, const double B,
-				   const double C, const double D);//,
-				   //const double generation_time,
-				   //const double construction_time,
-				   //const int NBFS,
-				   //const double *bfs_time, const int64_t *bfs_nedge);
+static void output_results_tofile (FILE* out_file, const int64_t SCALE, int64_t nvtx_scale,
+				   int64_t edgefactor,
+				   const double A, const double B,
+				   const double C, const double D,
+				   packed_edge *edge_list, int nedge);
 
 int
 main (int argc, char **argv)
@@ -131,26 +127,16 @@ main (int argc, char **argv)
   if (VERBOSE) fprintf (stderr, " done.\n");
   
   if(!dumpname) {
-    output_results_tofile(stderr, SCALE, nvtx_scale, edgefactor, A, B, C, D);
-#ifdef __OUTPUT__
-    for(int i = 0; i < nedge; i++) {
-      fprintf(stderr, "%d\t%d\n", IJ[i].v0, IJ[i].v1);
-    }
-#endif
+    printf("output file name does not exist. exit.\n");
+    exit(1); 
   } else {
     FILE *outf;
-    if ((outf = fopen(dumpname, "w")) == NULL) {
+    if ((outf = fopen(dumpname, "wb")) == NULL) {
       printf("file open error!!\n");
       exit(EXIT_FAILURE);
     }
-
-    output_results_tofile(outf, SCALE, nvtx_scale, edgefactor, A, B, C, D);
-#ifdef __OUTPUT__
-    for(int i = 0; i < nedge; i++) {
-      fprintf(outf, "%d\t%d\n", IJ[i].v0, IJ[i].v1);
-    }
-#endif
-  }
+    output_results_tofile (outf, SCALE, nvtx_scale, edgefactor, A, B, C, D, IJ, nedge);
+  } 
 #endif
 
 #ifndef GEN_ONLY
@@ -407,44 +393,32 @@ output_results (const int64_t SCALE, int64_t nvtx_scale, int64_t edgefactor,
 }
 
 void
-output_results_tofile (FILE *fp, const int64_t SCALE, int64_t nvtx_scale, int64_t edgefactor,
-		       const double A, const double B, const double C, const double D)//,
-//const double generation_time,
-//const double construction_time),
-//const int NBFS, const double *bfs_time, const int64_t *bfs_nedge)
+output_results_tofile (FILE *out_file, const int64_t SCALE, int64_t nvtx_scale, int64_t edgefactor,
+		       const double A, const double B, const double C, const double D, 
+		       packed_edge *edge_list, int nedge)
 {
   int k;
   int64_t sz;
   double *tm;
   double *stats;
 
-  //tm = alloca (NBFS * sizeof (*tm));
-  // stats = alloca (NSTAT * sizeof (*stats));
-  //if (!tm || !stats) {
-  //  perror ("Error allocating within final statistics calculation.");
-  //  abort ();
-  // }
+  if(!out_file) {
+    printf("output file does not exist. exit.\n");
+    exit(1); 
+  } 
 
-  sz = (1L << SCALE) * edgefactor * 2 * sizeof (int64_t);
-  fprintf (fp, "#SCALE: %" PRId64 "\n#nvtx: %" PRId64 "\n#edgefactor: %" PRId64 "\n"
-	  "#terasize: %20.17e\n",
-	  SCALE, nvtx_scale, edgefactor, sz/1.0e12);
-  fprintf (fp, "#A: %20.17e\n#B: %20.17e\n#C: %20.17e\n#D: %20.17e\n", A, B, C, D);
-  //printf ("generation_time: %20.17e\n", generation_time);
-  //printf ("construction_time: %20.17e\n", construction_time);
-  //printf ("nbfs: %d\n", NBFS);
+  if (out_BIN == 1) { // dump bin edge list
+    fwrite(edge_list, sizeof(packed_edge), nedge, out_file);
+  } 
+  else {              // dump text edge list 
+    sz = (1L << SCALE) * edgefactor * 2 * sizeof (int64_t);
+    fprintf (out_file, "#SCALE: %" PRId64 "\n#nvtx: %" PRId64 "\n#edgefactor: %" PRId64 "\n"
+	     "#terasize: %20.17e\n",
+	     SCALE, nvtx_scale, edgefactor, sz/1.0e12);
+    fprintf (out_file, "#A: %20.17e\n#B: %20.17e\n#C: %20.17e\n#D: %20.17e\n", A, B, C, D);
 
-  //memcpy (tm, bfs_time, NBFS*sizeof(tm[0]));
-  //statistics (stats, tm, NBFS);
-  //PRINT_STATS("time", 0);
-
-  //for (k = 0; k < NBFS; ++k)
-  //  tm[k] = bfs_nedge[k];
-  //statistics (stats, tm, NBFS);
-  //PRINT_STATS("nedge", 0);
-
-  //for (k = 0; k < NBFS; ++k)
-  //  tm[k] = bfs_nedge[k] / bfs_time[k];
-  //statistics (stats, tm, NBFS);
-  //PRINT_STATS("TEPS", 1);
+    for(int i = 0; i < nedge; i++) {
+      fprintf(out_file, "%d\t%d\n", edge_list[i].v0, edge_list[i].v1);
+    }
+  }
 }

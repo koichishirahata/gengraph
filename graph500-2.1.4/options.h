@@ -6,6 +6,8 @@
 
 extern int VERBOSE;
 extern int use_RMAT;
+extern int OUTPUT_tofile;
+extern int out_BIN;
 extern char *dumpname;
 extern char *rootname;
 

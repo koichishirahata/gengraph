@@ -21,6 +21,8 @@
 
 int VERBOSE = 0;
 int use_RMAT = 0;
+int OUTPUT_tofile = 0; 
+int out_BIN = 0; // output binary
 
 char *dumpname = NULL;
 char *rootname = NULL;
@@ -49,7 +51,7 @@ get_options (int argc, char **argv) {
   if (getenv ("VERBOSE"))
     VERBOSE = 1;
 
-  while ((c = getopt (argc, argv, "v?hRs:e:A:a:B:b:C:c:D:d:Vo:r:")) != -1)
+  while ((c = getopt (argc, argv, "v?hRs:e:A:a:B:b:C:c:D:d:Vio:r:")) != -1)
     
     switch (c) {
     case 'v':
@@ -73,6 +75,7 @@ get_options (int argc, char **argv) {
 	      "        so that the sum is 1.\n"
 	      "  V   : Enable extra (Verbose) output\n"
 	      "  o   : Read the edge list from (or dump to) the named file\n"
+	      "  i   : Dump binary to the named file \n"
 	      "  r   : Read the BFS roots from (or dump to) the named file\n"
 	      "\n"
 	      "Outputs take the form of \"key: value\", with keys:\n"
@@ -118,6 +121,10 @@ get_options (int argc, char **argv) {
 	fprintf (stderr, "Cannot copy dump file name.\n");
 	err = 1;
       }
+      OUTPUT_tofile = 1;
+      break;
+    case 'i':
+      out_BIN = 1;
       break;
     case 'r':
       rootname = strdup (optarg);
