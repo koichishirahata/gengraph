@@ -1,3 +1,12 @@
+/* Copyright (C) 2013 Koichi Shirahata.                                    */
+/*                                                                         */
+/* Use, modification and distribution is subject to the Boost Software     */
+/* License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at */
+/* http://www.boost.org/LICENSE_1_0.txt)                                   */
+/*                                                                         */
+/*  Authors: Koichi Shirahata                                              */
+/*                                                                         */
+
 /* -*- mode: C; mode: folding; fill-column: 70; -*- */
 /* Copyright 2010,  Georgia Institute of Technology, USA. */
 /* See COPYING for license. */
